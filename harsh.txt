@@ -1,0 +1,87 @@
+CREATE TABLE students (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT,
+    age INT, 
+    attendance FLOAT
+);
+CREATE TABLE students (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT,
+    age INT,
+    attendance FLOAT
+);
+
+PROJECT URL : https://vyftcmjhkztjhnbmpsfq.supabase.co
+
+API KEY : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZnRjbWpoa3p0amhuYm1wc2ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNTY2NDQsImV4cCI6MjA3MzgzMjY0NH0.VNsrRV27b_9m34S0cgg3c8PQ-0Qn80IJmn8Fytzco4A
+!pip install supabase
+from supabase import create_client, Client
+
+url = "https://selgvaefzrydybcoszzm.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlbGd2YWVmenJ5ZHliY29zenptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxOTg3NzAsImV4cCI6MjA3Mzc3NDc3MH0.PSMK_pRa5B_-HfAq_7BypP76ZnAqabehqj5zjWYXcrs"
+supabase: Client = create_client(url, key)
+
+# Insert test data
+supabase.table("students").insert({
+    "name": "Alice",
+    "age": 20,
+    "attendance": 82.5
+}).execute()
+import supabase
+print(supabase.__version__)
+url = "https://vyftcmjhkztjhnbmpsfq.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZnRjbWpoa3p0amhuYm1wc2ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNTY2NDQsImV4cCI6MjA3MzgzMjY0NH0.VNsrRV27b_9m34S0cgg3c8PQ-0Qn80IJmn8Fytzco4A"
+supabase: Client = create_client(url, key)
+
+# Insert test data
+supabase.table("students").insert({
+    "name": "Alice",
+    "age": 20,
+    "attendance": 82.5
+}).execute()
+# All students
+res = supabase.table("students").select("*").execute()
+print("All Students:", res.data)
+
+# Only eligible students (attendance >= 75)
+eligible = supabase.table("students").select("*").gte("attendance", 75).execute()
+print("Eligible Students:", eligible.data)
+# Update Alice’s attendance
+supabase.table("students").update({"attendance": 80}).eq("name", "Alice").execute()
+#Delete students with < 75% attendance
+supabase.table("students").delete().It("attendance",75).execute()
+%%writefile student_manager.py
+import streamlit as st
+from supabase import create_client
+import pandas as pd
+
+url = "https://selgvaefzrydybcoszzm.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlbGd2YWVmenJ5ZHliY29zenptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxOTg3NzAsImV4cCI6MjA3Mzc3NDc3MH0.PSMK_pRa5B_-HfAq_7BypP76ZnAqabehqj5zjWYXcrs"
+supabase = create_client(url, key)
+
+st.set_page_config(page_title="Student Manager", page_icon="🎓", layout="centered")
+
+st.title("🎓 Student Manager with Supabase")
+st.write("Add students, check attendance & eligibility")
+
+with st.form("student_form"):
+    name = st.text_input("Name")
+    age = st.number_input("Age", min_value=1, max_value=100, step=1)
+    attendance = st.number_input("Attendance (%)", min_value=0.0, max_value=100.0, step=0.5)
+    submitted = st.form_submit_button("➕ Add Student")
+    
+    if submitted and name:
+        supabase.table("students").insert({"name": name, "age": age, "attendance": attendance}).execute()
+        st.success(f"✅ {name} added successfully!")
+
+st.subheader("📋 Student List")
+res = supabase.table("students").select("*").execute()
+data = res.data
+
+if data:
+    df = pd.DataFrame(data)
+    df["Eligibility"] = df["attendance"].apply(lambda x: "✅ Eligible" if x >= 75 else "❌ Not Eligible")
+    st.dataframe(df, use_container_width=True)
+else:
+    st.info("No students found. Add some!")
+!streamlit run student_manager.py
